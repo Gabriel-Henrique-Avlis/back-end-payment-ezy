@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
@@ -27,10 +30,20 @@ import java.util.Map;
 @Validated
 public class PaymentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
     private final PaymentApplicationService paymentApplicationService;
 
     public PaymentController(PaymentApplicationService paymentApplicationService) {
         this.paymentApplicationService = paymentApplicationService;
+    }
+
+    @GetMapping
+    public ResponseEntity<?> info() {
+        return ResponseEntity.ok(Map.of(
+                "service", "Payment API",
+                "endpoint", "POST /payments",
+                "requiredHeaders", "Idempotency-Key"
+        ));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -51,9 +64,11 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", ex.getMessage()));
         } catch (IllegalArgumentException ex) {
+            logger.error("Validation error: ", ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", ex.getMessage()));
         } catch (Exception ex) {
+            logger.error("Unexpected error processing payment: ", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An unexpected error occurred"));
         }

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -30,7 +28,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      ENCRYPTION_KEY: n8f9k2m5L7jR3wQ6bN1vX4yP9sH8dF2aG5kJ7mL9oW
+      ENCRYPTION_KEY: n8f9k2m5L7jR3wQ6bN1vX4yP9sH8dF2a
     ports:
       - "8080:8080"
     depends_on:

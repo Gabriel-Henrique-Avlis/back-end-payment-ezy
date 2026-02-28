@@ -25,8 +25,8 @@ public class EncryptionServiceImpl implements DomainEncryptionService {
     private final SecureRandom random = new SecureRandom();
 
     public EncryptionServiceImpl(@Value("${encryption.key}") String base64Key) {
-        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-        this.key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+        byte[] keyBytes = base64Key.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        this.key = new SecretKeySpec(keyBytes, "AES");
     }
 
     @Override
