@@ -7,10 +7,6 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * JPA Persistence Entity for Payment.
- * Maps to database schema. Should not be used in business logic.
- */
 @Entity
 @Table(name = "payments")
 public class PaymentJpaEntity {

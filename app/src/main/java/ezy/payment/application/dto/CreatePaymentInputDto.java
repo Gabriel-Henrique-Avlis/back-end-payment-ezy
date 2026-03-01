@@ -4,23 +4,22 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/**
- * Application Input DTO for Payment Creation.
- * Used by controllers to receive and validate input.
- */
 public class CreatePaymentInputDto {
 
     @NotBlank(message = "First name is required")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]{1,50}$", message = "First name must contain only letters, spaces, hyphens, and apostrophes (max 50 chars)")
     private String firstName;
 
     @NotBlank(message = "Last name is required")
+    @Pattern(regexp = "^[a-zA-Z\\s'-]{1,50}$", message = "Last name must contain only letters, spaces, hyphens, and apostrophes (max 50 chars)")
     private String lastName;
 
     @NotBlank(message = "Expiry is required")
+    @Pattern(regexp = "^(0[1-9]|1[0-2])/([0-9]{2})$", message = "Expiry must be in MM/YY format")
     private String expiry;
 
     @NotBlank(message = "CVV is required")
-    @Size(min = 3, max = 4, message = "CVV must be 3-4 digits")
+    @Pattern(regexp = "^\\d{3,4}$", message = "CVV must be 3-4 digits")
     private String cvv;
 
     @NotBlank(message = "Card number is required")

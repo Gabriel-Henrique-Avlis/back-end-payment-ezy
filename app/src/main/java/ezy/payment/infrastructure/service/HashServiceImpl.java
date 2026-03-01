@@ -1,6 +1,8 @@
 package ezy.payment.infrastructure.service;
 
 import ezy.payment.domain.service.DomainHashService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,8 @@ import java.security.MessageDigest;
  */
 @Component
 public class HashServiceImpl implements DomainHashService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HashServiceImpl.class);
 
     @Override
     public String hashRequest(String firstName, String lastName, String expiry, String cardNumber, String cvv) {
@@ -30,7 +34,8 @@ public class HashServiceImpl implements DomainHashService {
             }
             return sb.toString();
         } catch (Exception ex) {
-            throw new RuntimeException("Hashing failed", ex);
+            logger.error("Hashing operation failed", ex);
+            throw new SecurityException("Hashing operation failed");
         }
     }
 }

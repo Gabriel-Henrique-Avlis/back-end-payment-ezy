@@ -4,10 +4,6 @@ import ezy.payment.domain.valueobject.CardNumber;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Domain Entity representing a Payment.
- * Encapsulates all business logic related to payments.
- */
 public class Payment {
     private final UUID id;
     private final String firstName;

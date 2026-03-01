@@ -1,7 +1,6 @@
 package ezy.payment.presentation.controller;
 
 import ezy.payment.application.dto.CreatePaymentInputDto;
-import ezy.payment.application.dto.CreatePaymentOutputDto;
 import ezy.payment.application.service.PaymentApplicationService;
 import ezy.payment.application.usecase.CreatePaymentUseCase;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -57,26 +56,22 @@ class PaymentControllerTest {
     @Test
     void shouldReturnCreatedWhenPaymentSuccessful() {
         CreatePaymentInputDto input = new CreatePaymentInputDto("John", "Doe", "12/25", "123", "4111111111111111");
-        CreatePaymentOutputDto output = new CreatePaymentOutputDto(
-                UUID.randomUUID(), "John", "Doe", "12/25", "1111", OffsetDateTime.now()
-        );
 
-        when(paymentApplicationService.createPayment("valid-key", input)).thenReturn(output);
-
-        ResponseEntity<?> response = controller.createPayment("valid-key", input);
+        ResponseEntity<?> response = controller.createPayment("valid-key-123456", input);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isEqualTo(output);
+        assertThat(response.getBody()).isNull();
+        verify(paymentApplicationService).createPayment("valid-key-123456", input);
     }
 
     @Test
     void shouldReturnConflictWhenIdempotencyConflict() {
         CreatePaymentInputDto input = new CreatePaymentInputDto("John", "Doe", "12/25", "123", "4111111111111111");
 
-        when(paymentApplicationService.createPayment("conflict-key", input))
-                .thenThrow(new CreatePaymentUseCase.IdempotencyConflictException("Idempotency key reused with different request payload"));
+        doThrow(new CreatePaymentUseCase.IdempotencyConflictException("Idempotency key reused with different request payload"))
+                .when(paymentApplicationService).createPayment("conflict-key-12345", input);
 
-        ResponseEntity<?> response = controller.createPayment("conflict-key", input);
+        ResponseEntity<?> response = controller.createPayment("conflict-key-12345", input);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getBody()).isEqualTo(Map.of("error", "Idempotency key reused with different request payload"));

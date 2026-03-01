@@ -1,13 +1,13 @@
 package ezy.payment.presentation.controller;
 
 import ezy.payment.application.dto.CreatePaymentInputDto;
-import ezy.payment.application.dto.CreatePaymentOutputDto;
 import ezy.payment.application.service.PaymentApplicationService;
 import ezy.payment.application.usecase.CreatePaymentUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,15 +19,22 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Map;
+import java.util.UUID;
 
-/**
- * REST Controller for Payment Operations.
- * Presentation layer that orchestrates requests to application services.
- * Does not contain business logic.
- */
 @RestController
 @RequestMapping(path = "/payments", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
+@CrossOrigin(
+    origins = "http://localhost:5173",
+    allowedHeaders = {"Content-Type", "Idempotency-Key"},
+    methods = {org.springframework.web.bind.annotation.RequestMethod.GET, 
+               org.springframework.web.bind.annotation.RequestMethod.POST,
+               org.springframework.web.bind.annotation.RequestMethod.PUT,
+               org.springframework.web.bind.annotation.RequestMethod.DELETE,
+               org.springframework.web.bind.annotation.RequestMethod.OPTIONS},
+    allowCredentials = "true",
+    maxAge = 3600
+)
 public class PaymentController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
@@ -51,26 +58,31 @@ public class PaymentController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreatePaymentInputDto input) {
 
-        // Validate idempotency key presence
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Idempotency-Key header is required"));
         }
+        if (idempotencyKey.length() < 16 || idempotencyKey.length() > 128) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Idempotency-Key must be between 16 and 128 characters"));
+        }
 
         try {
-            CreatePaymentOutputDto output = paymentApplicationService.createPayment(idempotencyKey, input);
-            return ResponseEntity.status(HttpStatus.CREATED).body(output);
+            paymentApplicationService.createPayment(idempotencyKey, input);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (CreatePaymentUseCase.IdempotencyConflictException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", ex.getMessage()));
         } catch (IllegalArgumentException ex) {
-            logger.error("Validation error: ", ex);
+            String correlationId = UUID.randomUUID().toString();
+            logger.error("Validation error [{}]: {}", correlationId, ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", ex.getMessage()));
+                    .body(Map.of("error", ex.getMessage(), "correlationId", correlationId));
         } catch (Exception ex) {
-            logger.error("Unexpected error processing payment: ", ex);
+            String correlationId = UUID.randomUUID().toString();
+            logger.error("Unexpected error [{}]: ", correlationId, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An unexpected error occurred"));
+                    .body(Map.of("error", "An unexpected error occurred. Please contact support with correlation ID: " + correlationId, "correlationId", correlationId));
         }
     }
 }

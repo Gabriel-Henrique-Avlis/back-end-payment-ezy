@@ -1,7 +1,6 @@
 package ezy.payment.application.usecase;
 
 import ezy.payment.application.dto.CreatePaymentInputDto;
-import ezy.payment.application.dto.CreatePaymentOutputDto;
 import ezy.payment.domain.entity.IdempotencyRecord;
 import ezy.payment.domain.entity.Payment;
 import ezy.payment.domain.repository.IdempotencyRepository;
@@ -73,10 +72,8 @@ class CreatePaymentUseCaseTest {
         doNothing().when(paymentRepository).save(any());
         doNothing().when(idempotencyRepository).save(any());
 
-        CreatePaymentOutputDto output = useCase.execute(idempotencyKey, validInput);
+        useCase.execute(idempotencyKey, validInput);
 
-        assertThat(output.getId()).isNotNull();
-        assertThat(output.getCardLast4()).isEqualTo("1111");
         verify(paymentRepository, times(1)).save(any());
         verify(idempotencyRepository, times(1)).save(any());
     }
@@ -94,15 +91,8 @@ class CreatePaymentUseCaseTest {
         when(hashService.hashRequest("John", "Doe", "12/25", "4111111111111111", "123"))
                 .thenReturn(requestHash);
 
-        Payment existingPayment = new Payment(
-                paymentId, "John", "Doe", "12/25",
-                new CardNumber("4111111111111111"), "encrypted-card", OffsetDateTime.now()
-        );
-        when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(existingPayment));
+        useCase.execute(idempotencyKey, validInput);
 
-        CreatePaymentOutputDto output = useCase.execute(idempotencyKey, validInput);
-
-        assertThat(output.getId()).isEqualTo(paymentId);
         verify(paymentRepository, never()).save(any());
         verify(idempotencyRepository, never()).save(any());
     }

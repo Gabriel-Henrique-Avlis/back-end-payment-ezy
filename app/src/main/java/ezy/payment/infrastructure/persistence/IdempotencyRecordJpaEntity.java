@@ -6,10 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
-/**
- * JPA Persistence Entity for Idempotency Record.
- * Maps to database schema. Should not be used in business logic.
- */
 @Entity
 @Table(name = "idempotency_records")
 public class IdempotencyRecordJpaEntity {

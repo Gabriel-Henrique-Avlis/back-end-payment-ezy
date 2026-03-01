@@ -4,10 +4,6 @@ import ezy.payment.domain.valueobject.IdempotencyKey;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Domain Entity representing an Idempotency Record.
- * Tracks requests to ensure idempotent behavior.
- */
 public class IdempotencyRecord {
     private final IdempotencyKey key;
     private final String requestHash;

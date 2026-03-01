@@ -1,6 +1,8 @@
 package ezy.payment.infrastructure.service;
 
 import ezy.payment.domain.service.DomainEncryptionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,12 +13,10 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * AES-256-GCM encryption for card data at rest.
- */
 @Component
 public class EncryptionServiceImpl implements DomainEncryptionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EncryptionServiceImpl.class);
     private static final String ALGORITHM = "AES/GCM/NoPadding";
     private static final int IV_SIZE = 12;
     private static final int TAG_SIZE = 128;
@@ -45,7 +45,8 @@ public class EncryptionServiceImpl implements DomainEncryptionService {
 
             return Base64.getEncoder().encodeToString(result);
         } catch (Exception e) {
-            throw new RuntimeException("Encryption failed", e);
+            logger.error("Encryption operation failed", e);
+            throw new SecurityException("Encryption operation failed");
         }
     }
 
@@ -62,7 +63,8 @@ public class EncryptionServiceImpl implements DomainEncryptionService {
 
             return new String(decrypted);
         } catch (Exception e) {
-            throw new RuntimeException("Decryption failed", e);
+            logger.error("Decryption operation failed", e);
+            throw new SecurityException("Decryption operation failed");
         }
     }
 }

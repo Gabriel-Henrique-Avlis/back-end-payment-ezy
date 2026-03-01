@@ -10,10 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Infrastructure Implementation of Domain PaymentRepository.
- * Adapts JPA persistence to domain repository interface.
- */
 @Repository
 public class PaymentRepositoryImpl implements PaymentRepository {
 

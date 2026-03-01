@@ -1,7 +1,6 @@
 package ezy.payment.application.service;
 
 import ezy.payment.application.dto.CreatePaymentInputDto;
-import ezy.payment.application.dto.CreatePaymentOutputDto;
 import ezy.payment.application.usecase.CreatePaymentUseCase;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +17,7 @@ public class PaymentApplicationService {
         this.createPaymentUseCase = createPaymentUseCase;
     }
 
-    public CreatePaymentOutputDto createPayment(String idempotencyKey, CreatePaymentInputDto input) {
-        return createPaymentUseCase.execute(idempotencyKey, input);
+    public void createPayment(String idempotencyKey, CreatePaymentInputDto input) {
+        createPaymentUseCase.execute(idempotencyKey, input);
     }
 }
